@@ -64,7 +64,7 @@ jobs:
           python -m pip install -r requirements.txt pyinstaller
       - name: Bundle MintGuard and create DEB
         run: |
-          pyinstaller --noconfirm --clean --windowed --onedir --name mintguard cleaner.py
+          pyinstaller --noconfirm --clean --windowed --onedir --name mintguard --add-data "assets/mintguard.svg:assets" cleaner.py
           python packaging/build_deb.py
           dpkg-deb --info build/mintguard_2.0.0_amd64.deb
           dpkg-deb --contents build/mintguard_2.0.0_amd64.deb | tail -15
