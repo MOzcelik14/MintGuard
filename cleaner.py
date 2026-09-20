@@ -44,14 +44,6 @@ def stylesheet(palette: dict[str, str]) -> str:
             background: transparent; border: none;
         }}
         QCheckBox {{ spacing: 10px; font-size: 14px; }}
-        QCheckBox::indicator {{
-            width: 18px; height: 18px; border: 1px solid {p["border"]};
-            border-radius: 5px; background: {p["field"]};
-        }}
-        QCheckBox::indicator:checked {{
-            background: {p["accent"]}; border-color: {p["accent"]};
-            image: none;
-        }}
         QPushButton {{
             background: {p["field"]}; border: 1px solid {p["border"]};
             border-radius: 10px; padding: 11px 18px; font-weight: 650;
