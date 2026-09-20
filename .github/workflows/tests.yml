@@ -22,7 +22,23 @@ jobs:
         run: python -m compileall -q cleaner.py modules tests
       - name: Unit tests
         run: python -m unittest discover -s tests -v
-      - name: Import the Qt user interface
+      - name: Launch Qt dashboard headlessly
         env:
           QT_QPA_PLATFORM: offscreen
-        run: python -c "import cleaner; print('UI import OK')"
+        run: |
+          python - <<'PY'
+          import time
+          from PySide6.QtWidgets import QApplication
+          from cleaner import MintGuard
+          app = QApplication([])
+          window = MintGuard()
+          deadline = time.monotonic() + 30
+          while window.worker is not None and time.monotonic() < deadline:
+              app.processEvents()
+              time.sleep(0.025)
+          app.processEvents()
+          assert window.worker is None, "Dashboard scan did not finish"
+          assert window.cards["apt"].metric.text() != "Taranıyor…"
+          window.close()
+          print("Dashboard smoke test OK")
+          PY
