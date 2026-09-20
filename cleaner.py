@@ -6,7 +6,7 @@ from collections import deque
 from pathlib import Path
 
 from PySide6.QtCore import QThread, QTimer, Qt, Signal, QUrl
-from PySide6.QtGui import QColor, QDesktopServices, QFont, QPainter, QPen
+from PySide6.QtGui import QColor, QDesktopServices, QFont, QPainter, QPen, QIcon
 from PySide6.QtWidgets import (
     QApplication, QCheckBox, QFrame, QGridLayout, QHBoxLayout, QLabel,
     QMessageBox, QPlainTextEdit, QProgressBar, QPushButton, QScrollArea,
@@ -19,7 +19,7 @@ from modules.i18n import tr
 from modules.maintenance import (
     Snapshot, TaskResult, format_size, run_maintenance, scan_system,
 )
-from modules.storage import StorageReport, cache_preview, scan_home, storage_lines
+from modules.storage import StorageReport, cache_preview, scan_home, storage_lines, mounted_volumes, volume_lines
 from modules.system_info import (
     SystemSnapshot, VERSION, snapshot, storage_display, uptime_display,
 )
@@ -190,7 +190,7 @@ class Work(QThread):
                 payload = snapshot()
             elif self.action == "storage":
                 report = scan_home(on_progress=lambda n: self.progress.emit(f"{n:,} files"))
-                payload = (report, cache_preview())
+                payload = (report, cache_preview(), mounted_volumes())
             elif self.action == "apt-preview":
                 payload = unused_apt_preview()
             elif self.action == "release":
@@ -221,6 +221,10 @@ class MintGuard(QWidget):
         self.flatpak_available = True
         self.columns = 2
         self.setWindowTitle("MintGuard 2")
+        icon = (Path(getattr(sys, "_MEIPASS", Path(__file__).resolve().parent))
+                / "assets/mintguard.svg")
+        if icon.exists():
+            self.setWindowIcon(QIcon(str(icon)))
         self.resize(1080, 790)
         self.setMinimumSize(660, 510)
 
@@ -382,6 +386,11 @@ class MintGuard(QWidget):
         self.storage_output.setReadOnly(True)
         self.storage_output.setMinimumHeight(320)
         self.storage_note = text_label(tr("personal_note"), "muted")
+        self.volumes_title = text_label(tr("volumes"), "section")
+        self.volumes_output = QPlainTextEdit()
+        self.volumes_output.setReadOnly(True)
+        self.volumes_output.setMinimumHeight(130)
+        self.volumes_output.setMaximumHeight(220)
         self.preview_title = text_label(tr("preview"), "section")
         self.preview_output = QPlainTextEdit()
         self.preview_output.setReadOnly(True)
@@ -389,7 +398,8 @@ class MintGuard(QWidget):
         self.browser_note = text_label(tr("browser_note"), "muted")
         for widget in (
             self.storage_title, self.storage_hint, self.disk_text,
-            self.disk_progress, self.storage_scan, self.storage_output,
+            self.disk_progress, self.volumes_title, self.volumes_output,
+            self.storage_scan, self.storage_output,
             self.storage_note, self.preview_title, self.preview_output, self.browser_note,
         ):
             col.addWidget(widget)
@@ -481,6 +491,7 @@ class MintGuard(QWidget):
             (self.cache_warning, "cache_warn"), (self.folders_title, "folders"),
             (self.apt_preview_button, "apt_preview"), (self.report_title, "report"),
             (self.storage_title, "space"), (self.storage_hint, "disk_hint"),
+            (self.volumes_title, "volumes"),
             (self.storage_scan, "scan"), (self.storage_note, "personal_note"),
             (self.preview_title, "preview"), (self.browser_note, "browser_note"),
             (self.system_title, "system_details"), (self.history_title, "history"),
@@ -532,8 +543,12 @@ class MintGuard(QWidget):
         elif action == "health":
             self.show_health(payload)
         elif action == "storage":
-            report, previews = payload
+            report, previews, volumes = payload
+            self.volumes_output.setPlainText(volume_lines(volumes))
             self.storage_output.setPlainText(storage_lines(report))
+            preview_map = {item.path: item.size for item in previews}
+            self.cards["thumbs"].metric.setText(format_size(preview_map.get("Küçük resimler")))
+            self.cards["trash"].metric.setText(format_size(preview_map.get("Çöp kutusu")))
             self.preview_output.setPlainText(
                 "\n".join(
                     f"{row.path}: {format_size(row.size)}" for row in previews
