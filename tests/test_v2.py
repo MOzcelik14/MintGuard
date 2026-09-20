@@ -10,7 +10,7 @@ from unittest.mock import patch
 
 from modules.history import load_history, save_history, version_tuple
 from modules.maintenance import TaskResult
-from modules.storage import cache_preview, scan_home
+from modules.storage import cache_preview, mounted_volumes, scan_home
 from modules.system_info import (
     battery_info, cpu_ticks, cpu_usage, meminfo, uptime_display, zram_info,
 )
@@ -68,6 +68,15 @@ class StorageTests(unittest.TestCase):
             self.assertEqual(report.scanned_files, 1)
             self.assertTrue(report.truncated)
             self.assertEqual(len(report.largest_files), 1)
+
+    def test_mount_points_are_read_only_and_listed(self):
+        with tempfile.TemporaryDirectory() as temp:
+            target = Path(temp)
+            mounts = target / "mounts.txt"
+            mounts.write_text(f"/dev/test {target} ext4 rw 0 0\n", encoding="utf-8")
+            volumes = mounted_volumes(mounts)
+            self.assertTrue(any(item.mountpoint == str(target)
+                                and item.filesystem == "ext4" for item in volumes))
 
     def test_browser_preview_is_read_only(self):
         with tempfile.TemporaryDirectory() as temp:
