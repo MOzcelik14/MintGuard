@@ -56,7 +56,7 @@ Yerel .deb üretimi için, önce PyInstaller kurulup proje kökünde şu komutla
 
 ~~~bash
 .venv/bin/python -m pip install pyinstaller
-.venv/bin/pyinstaller --noconfirm --clean --windowed --onedir --name mintguard cleaner.py
+.venv/bin/pyinstaller --noconfirm --clean --windowed --onedir --name mintguard --add-data "assets/mintguard.svg:assets" cleaner.py
 .venv/bin/python packaging/build_deb.py
 ~~~
 
