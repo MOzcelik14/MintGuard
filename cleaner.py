@@ -217,6 +217,7 @@ class MintGuard(QWidget):
         self.worker: Work | None = None
         self.worker_action = ""
         self.pending_scan = False
+        self.initial_health = True
         self.flatpak_available = True
         self.columns = 2
         self.setWindowTitle("MintGuard 2")
@@ -562,7 +563,10 @@ class MintGuard(QWidget):
             good = sum(result.ok for result in results)
             self.status.setText(f"{good}/{len(results)} · {tr('done', self.language)}")
             return
-        self.status.setText(tr("scan_done", self.language))
+        if action == "scan" and payload.warnings:
+            self.status.setText(" · ".join(payload.warnings[:3]))
+        else:
+            self.status.setText(tr("scan_done", self.language))
 
     def show_scan(self, data: Snapshot) -> None:
         self.flatpak_available = data.flatpak_available
@@ -660,6 +664,9 @@ class MintGuard(QWidget):
         if self.pending_scan:
             self.pending_scan = False
             self.refresh()
+        elif self.worker_action == "scan" and self.initial_health:
+            self.initial_health = False
+            self.start_worker("health")
 
     def closeEvent(self, event) -> None:
         if self.worker is not None and self.worker.isRunning():
