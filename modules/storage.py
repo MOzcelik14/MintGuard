@@ -7,6 +7,7 @@ from __future__ import annotations
 import heapq
 import os
 import stat
+import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable
@@ -139,3 +140,63 @@ def storage_lines(report: StorageReport, count: int = 12) -> str:
     lines.append("\nEn büyük dosyalar (otomatik silinmez):")
     lines.extend(f"  {format_size(e.size)}  {e.path}" for e in report.largest_files[:count])
     return "\n".join(lines)
+
+
+@dataclass
+class Volume:
+    mountpoint: str
+    device: str
+    filesystem: str
+    total: int
+    used: int
+    free: int
+
+
+REAL_FILESYSTEMS = frozenset({
+    "ext4", "ext3", "btrfs", "xfs", "f2fs", "vfat", "exfat",
+    "ntfs", "ntfs3", "fuseblk", "zfs",
+})
+
+
+def mounted_volumes(mounts_file: Path = Path("/proc/mounts")) -> list[Volume]:
+    """Read-only overview of locally mounted storage; skip pseudo filesystems."""
+    try:
+        text = mounts_file.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        text = ""
+    seen: set[str] = set()
+    volumes = []
+    for row in text.splitlines():
+        fields = row.split()
+        if len(fields) < 3 or fields[2] not in REAL_FILESYSTEMS:
+            continue
+        device, path, fs = fields[:3]
+        path = path.replace(r"\040", " ")
+        if path in seen:
+            continue
+        seen.add(path)
+        try:
+            usage = shutil.disk_usage(path)
+        except OSError:
+            continue
+        volumes.append(Volume(
+            path, device, fs, usage.total, usage.used, usage.free,
+        ))
+    if "/" not in seen:
+        try:
+            usage = shutil.disk_usage("/")
+            volumes.insert(0, Volume(
+                "/", "/", "root", usage.total, usage.used, usage.free,
+            ))
+        except OSError:
+            pass
+    return sorted(volumes, key=lambda item: (item.mountpoint != "/", item.mountpoint))
+
+
+def volume_lines(volumes: list[Volume]) -> str:
+    return "\n".join(
+        f"{v.mountpoint} · {v.filesystem}\n  "
+        f"{format_size(v.used)} / {format_size(v.total)}"
+        f" ({format_size(v.free)} free)"
+        for v in volumes
+    ) or "—"
