@@ -3,7 +3,7 @@ STRINGS = {
  "tr": {
   "app":"MintGuard", "subtitle":"Linux Mint sistem bakım merkezi",
   "overview":"Genel Bakış", "cleanup":"Temizlik", "storage":"Depolama", "system":"Sistem",
-  "disk":"Disk kullanımı", "cpu":"İşlemci", "memory":"Bellek",
+  "disk":"Disk kullanımı", "volumes":"Disk bölümleri", "cpu":"İşlemci", "memory":"Bellek",
   "swap":"Swap", "zram":"ZRAM", "battery":"Pil sağlığı",
   "refresh":"Yeniden tara", "scan":"Ev dizinini analiz et",
   "run":"Seçilenleri temizle", "age":"Dosya yaşı:", "days":" gün",
@@ -44,7 +44,7 @@ STRINGS = {
  "en": {
   "app":"MintGuard", "subtitle":"Linux Mint maintenance center",
   "overview":"Overview", "cleanup":"Cleanup", "storage":"Storage", "system":"System",
-  "disk":"Disk usage", "cpu":"CPU", "memory":"Memory",
+  "disk":"Disk usage", "volumes":"Mounted volumes", "cpu":"CPU", "memory":"Memory",
   "swap":"Swap", "zram":"ZRAM", "battery":"Battery health",
   "refresh":"Refresh", "scan":"Analyze home folder",
   "run":"Clean selected", "age":"File age:", "days":" days",
