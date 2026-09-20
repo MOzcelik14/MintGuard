@@ -52,7 +52,7 @@ def build(dist: Path, output: Path, version: str) -> Path:
         (control / "control").write_text(
             f"Package: mintguard\nVersion: {version}\n"
             "Section: utils\nPriority: optional\nArchitecture: amd64\n"
-            "Maintainer: Murat Özçelik <muratozclik@protonmail.com>\n"
+            "Maintainer: MintGuard contributors <noreply@github.com>\n"
             "Depends: libc6 (>= 2.39), libgl1, libegl1, libopengl0, libxkbcommon-x11-0, libxcb-cursor0\n"
             "Recommends: polkitd, flatpak\n"
             "Description: Linux Mint maintenance and health dashboard\n"
