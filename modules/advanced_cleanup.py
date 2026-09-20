@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import shutil
+import subprocess
 from pathlib import Path
 
 from modules.maintenance import TaskResult, clean_cache, run_command
@@ -13,7 +14,7 @@ def unused_apt_preview() -> str:
         return "apt-get bulunamadı."
     try:
         result = run_command(["apt-get", "-s", "autoremove"], timeout=30)
-    except (OSError, TimeoutError) as error:
+    except (OSError, subprocess.TimeoutExpired) as error:
         return f"APT kontrolü başarısız: {error}"
     if result.returncode:
         return f"APT kontrolü başarısız: {result.stderr.strip()[-250:]}"
