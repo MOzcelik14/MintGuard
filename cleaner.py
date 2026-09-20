@@ -130,6 +130,7 @@ class MintGuard(QWidget):
         self.worker: MaintenanceWorker | None = None
         self.pending_refresh = False
         self.columns = 2
+        self.flatpak_available = True
 
         screen = QScrollArea()
         screen.setWidgetResizable(True)
@@ -258,8 +259,8 @@ class MintGuard(QWidget):
         self.refresh_button.setDisabled(busy)
         self.clean_button.setDisabled(busy)
         self.days.setDisabled(busy)
-        for card in self.cards.values():
-            card.check.setDisabled(busy)
+        for name, card in self.cards.items():
+            card.check.setDisabled(busy or (name == "flatpak" and not self.flatpak_available))
         self.activity.setVisible(busy)
         if busy:
             self.activity.setRange(0, 0)
@@ -306,6 +307,7 @@ class MintGuard(QWidget):
             f"({data.cache.eligible_count} dosya). Önbellek temizliği isteğe bağlıdır."
         )
         self.cards["journal"].metric.setText(format_size(data.journal_bytes))
+        self.flatpak_available = data.flatpak_available
         self.cards["flatpak"].metric.setText(
             "Kullanılabilir" if data.flatpak_available else "Kurulu değil"
         )
