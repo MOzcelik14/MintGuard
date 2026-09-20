@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="MintGuard">
+  <defs>
+    <linearGradient id="mint" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#85f1bf"/>
+      <stop offset="1" stop-color="#189461"/>
+    </linearGradient>
+  </defs>
+  <rect x="9" y="9" width="110" height="110" rx="29" fill="#10291f"/>
+  <path d="M64 20 105 36v32c0 26-17 40-41 47C40 108 23 94 23 68V36Z"
+        fill="url(#mint)" stroke="#c3ffe4" stroke-width="3"/>
+  <path d="M41 47v35m0-35 23 24 23-24v35" fill="none"
+        stroke="#123b2b" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="m47 88 11 8 25-26" fill="none" stroke="#f1fff8"
+        stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
