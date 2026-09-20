@@ -1,0 +1,44 @@
+name: MintGuard checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Qt runtime dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libegl1 libopengl0 libxcb-cursor0 libxkbcommon-x11-0
+      - name: Install Python dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Compile Python files
+        run: python -m compileall -q cleaner.py modules tests
+      - name: Unit tests
+        run: python -m unittest discover -s tests -v
+      - name: Launch Qt dashboard headlessly
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          python - <<'PY'
+          import time
+          from PySide6.QtWidgets import QApplication
+          from cleaner import MintGuard
+          app = QApplication([])
+          window = MintGuard()
+          deadline = time.monotonic() + 30
+          while window.worker is not None and time.monotonic() < deadline:
+              app.processEvents()
+              time.sleep(0.025)
+          app.processEvents()
+          assert window.worker is None, "Dashboard scan did not finish"
+          assert window.cards["apt"].metric.text() != "Taranıyor…"
+          window.close()
+          print("Dashboard smoke test OK")
+          PY
